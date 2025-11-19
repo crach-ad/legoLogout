@@ -1,0 +1,82 @@
+@import 'tailwindcss';
+
+@theme inline {
+  --font-sans: 'Geist', 'Geist Fallback';
+  --font-mono: 'Geist Mono', 'Geist Mono Fallback';
+
+  /* Updated to red, white, and blue color scheme */
+  --color-background: #F8F9FA;
+  --color-foreground: #1e1e28;
+  
+  --color-card: #ffffff;
+  --color-card-foreground: #1e1e28;
+  
+  --color-popover: #ffffff;
+  --color-popover-foreground: #1e1e28;
+  
+  --color-primary: #DC2626;
+  --color-primary-foreground: #ffffff;
+  
+  --color-secondary: #2563EB;
+  --color-secondary-foreground: #ffffff;
+  
+  --color-muted: #f8f8fa;
+  --color-muted-foreground: #78788c;
+  
+  --color-accent: #3B82F6;
+  --color-accent-foreground: #ffffff;
+  
+  --color-destructive: #DC2626;
+  --color-destructive-foreground: #ffffff;
+  
+  --color-success: #4CD964;
+  --color-warning: #F59E0B;
+  
+  --color-border: #e6e6f0;
+  --color-input: #e6e6f0;
+  --color-ring: #DC2626;
+  
+  --radius: 1.5rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  @theme inline {
+    --color-background: #14141e;
+    --color-foreground: #F8F9FA;
+    
+    --color-card: #1e1e2d;
+    --color-card-foreground: #F8F9FA;
+    
+    --color-popover: #1e1e2d;
+    --color-popover-foreground: #F8F9FA;
+    
+    --color-primary: #EF4444;
+    --color-primary-foreground: #ffffff;
+    
+    --color-secondary: #3B82F6;
+    --color-secondary-foreground: #ffffff;
+    
+    --color-muted: #282837;
+    --color-muted-foreground: #a0a0b4;
+    
+    --color-accent: #60A5FA;
+    --color-accent-foreground: #ffffff;
+    
+    --color-destructive: #EF4444;
+    --color-destructive-foreground: #ffffff;
+    
+    --color-success: #4CD964;
+    --color-warning: #F59E0B;
+    
+    --color-border: #3c3c50;
+    --color-input: #3c3c50;
+    --color-ring: #EF4444;
+  }
+}
+
+/* Updated gradient to red, white, and blue theme */
+body {
+  font-family: var(--font-sans);
+  background: linear-gradient(135deg, #DBEAFE 0%, #FFFFFF 50%, #FEE2E2 100%);
+  min-height: 100vh;
+}
