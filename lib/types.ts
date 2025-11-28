@@ -16,7 +16,7 @@ export interface CartItem {
   category: PartCategory
 }
 
-export type PartCategory = 'electronics' | 'motion' | 'structure' | 'connectors' | 'specialty' | 'landscape'
+export type PartCategory = 'Hubs' | 'Motors' | 'Tires' | 'Claws'
 
 export interface Part {
   id: string

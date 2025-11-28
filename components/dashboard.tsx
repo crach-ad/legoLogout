@@ -2,98 +2,154 @@
 
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
-import { Store, Package, CheckCircle, Box } from 'lucide-react'
+import { Store, Package, Box, LogOut } from 'lucide-react'
+import { PageWrapper } from '@/components/page-wrapper'
 import type { TeamProfile } from '@/lib/types'
 
 interface DashboardProps {
   profile: TeamProfile
   onNavigate: (screen: 'shop' | 'inventory' | 'myitems') => void
+  onLogout?: () => void
 }
 
-export function Dashboard({ profile, onNavigate }: DashboardProps) {
-  const remaining = profile.budget - profile.spent
+export function Dashboard({ profile, onNavigate, onLogout }: DashboardProps) {
   const cartCount = profile.cart.reduce((sum, item) => sum + item.quantity, 0)
   const ownedCount = profile.ownedItems.reduce((sum, item) => sum + item.quantity, 0)
 
+  // Calculate bonus points: 10 KB = 5 points, max 20 KB = 10 points
+  const calculateBonusPoints = (remainingBudget: number) => {
+    const maxKB = Math.min(remainingBudget, 20)
+    return Math.floor(maxKB / 10) * 5
+  }
+
+  const bonusPoints = calculateBonusPoints(profile.budget)
+
   return (
-    <div className="min-h-screen p-4 md:p-8">
-      <div className="max-w-5xl mx-auto space-y-8">
-        {/* Money Display */}
-        <Card className="p-8 shadow-2xl bg-white/90 backdrop-blur">
-          <div className="text-center space-y-4">
-            <p className="text-3xl font-bold text-muted-foreground">
-              Your Money
-            </p>
-            <div className="relative">
-              <div className="text-9xl font-black text-transparent bg-clip-text bg-gradient-to-r from-primary via-secondary to-accent">
-                {profile.budget}
-              </div>
-              <p className="text-4xl font-bold text-secondary mt-2">
-                King Bucks
-              </p>
+    <PageWrapper>
+      <div className="p-4 md:p-8">
+        <div className="max-w-5xl mx-auto space-y-8">
+          {/* Header with Team Info and Logout */}
+          <div className="flex justify-between items-center">
+            <div>
+              <h2 className="text-3xl font-light text-white">{profile.teamName}</h2>
+              <p className="text-xl font-medium text-white/60">{profile.house}</p>
             </div>
+            {onLogout && (
+              <Button
+                onClick={onLogout}
+                variant="ghost"
+                size="lg"
+                className="h-12 px-6 text-base font-medium text-red-400 hover:text-red-300 hover:bg-red-500/10 border border-red-500/30 rounded-xl"
+              >
+                <LogOut className="w-5 h-5 mr-2" />
+                New Team
+              </Button>
+            )}
           </div>
-        </Card>
 
-        {/* Big Action Buttons */}
-        <div className="grid gap-6">
-          <button
-            onClick={() => onNavigate('shop')}
-            className="bg-gradient-to-br from-primary to-pink-500 rounded-3xl p-12 shadow-2xl transform transition-all hover:scale-105 active:scale-95 group"
-          >
-            <div className="flex flex-col items-center space-y-6">
-              <div className="w-32 h-32 bg-white/30 rounded-full flex items-center justify-center backdrop-blur-sm group-hover:rotate-12 transition-transform">
-                <Store className="w-20 h-20 text-white" strokeWidth={3} />
+          {/* Money Display */}
+          <Card className="p-8 bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl">
+            <div className="text-center space-y-4">
+              <p className="text-lg text-white/60 font-light uppercase tracking-wide">
+                Your Budget
+              </p>
+              <div className="relative">
+                <div className="text-8xl font-light text-white">
+                  {profile.budget}
+                </div>
+                <p className="text-xl font-medium text-white/60 mt-2">
+                  King Bucks
+                </p>
               </div>
-              <span className="text-6xl font-black text-white drop-shadow-lg">
-                SHOP
-              </span>
             </div>
-          </button>
+          </Card>
 
-          <button
-            onClick={() => onNavigate('inventory')}
-            className="bg-gradient-to-br from-secondary to-purple-600 rounded-3xl p-12 shadow-2xl transform transition-all hover:scale-105 active:scale-95 relative group"
-          >
-            <div className="flex flex-col items-center space-y-6">
-              <div className="w-32 h-32 bg-white/30 rounded-full flex items-center justify-center backdrop-blur-sm group-hover:rotate-12 transition-transform relative">
-                <Package className="w-20 h-20 text-white" strokeWidth={3} />
-                {cartCount > 0 && (
-                  <div className="absolute -top-2 -right-2 w-16 h-16 bg-accent rounded-full flex items-center justify-center border-4 border-white shadow-lg">
-                    <span className="text-3xl font-black text-foreground">
-                      {cartCount}
-                    </span>
+          {/* Bonus Points Display */}
+          {bonusPoints > 0 && (
+            <Card className="p-6 bg-gradient-to-r from-amber-500/20 to-orange-500/20 backdrop-blur-md border border-amber-500/30 rounded-2xl">
+              <div className="text-center space-y-2">
+                <p className="text-lg font-medium text-amber-400">
+                  Potential Bonus Points
+                </p>
+                <div className="text-5xl font-light text-white">
+                  {bonusPoints}
+                </div>
+                <p className="text-sm text-white/60">
+                  (10 KB = 5 points, max 20 KB = 10 points)
+                </p>
+              </div>
+            </Card>
+          )}
+
+          {/* Action Buttons */}
+          <div className="grid gap-4">
+            <button
+              onClick={() => onNavigate('shop')}
+              className="bg-blue-600/80 hover:bg-blue-600 border border-blue-400/30 rounded-2xl p-8 backdrop-blur-sm transform transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] group"
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-6">
+                  <div className="w-16 h-16 bg-white/10 rounded-xl flex items-center justify-center backdrop-blur-sm group-hover:bg-white/20 transition-colors">
+                    <Store className="w-8 h-8 text-white" strokeWidth={1.5} />
                   </div>
-                )}
+                  <span className="text-3xl font-semibold text-white">
+                    Shop
+                  </span>
+                </div>
+                <span className="text-white/40 text-lg">Browse parts</span>
               </div>
-              <span className="text-6xl font-black text-white drop-shadow-lg">
-                INVENTORY
-              </span>
-            </div>
-          </button>
+            </button>
 
-          <button
-            onClick={() => onNavigate('myitems')}
-            className="bg-gradient-to-br from-green-500 to-emerald-700 rounded-3xl p-12 shadow-2xl transform transition-all hover:scale-105 active:scale-95 relative group"
-          >
-            <div className="flex flex-col items-center space-y-6">
-              <div className="w-32 h-32 bg-white/30 rounded-full flex items-center justify-center backdrop-blur-sm group-hover:rotate-12 transition-transform relative">
-                <Box className="w-20 h-20 text-white" strokeWidth={3} />
-                {ownedCount > 0 && (
-                  <div className="absolute -top-2 -right-2 w-16 h-16 bg-yellow-400 rounded-full flex items-center justify-center border-4 border-white shadow-lg">
-                    <span className="text-3xl font-black text-foreground">
-                      {ownedCount}
-                    </span>
+            <button
+              onClick={() => onNavigate('inventory')}
+              className="bg-purple-600/80 hover:bg-purple-600 border border-purple-400/30 rounded-2xl p-8 backdrop-blur-sm transform transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] group relative"
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-6">
+                  <div className="w-16 h-16 bg-white/10 rounded-xl flex items-center justify-center backdrop-blur-sm group-hover:bg-white/20 transition-colors relative">
+                    <Package className="w-8 h-8 text-white" strokeWidth={1.5} />
+                    {cartCount > 0 && (
+                      <div className="absolute -top-2 -right-2 w-8 h-8 bg-amber-500 rounded-full flex items-center justify-center border-2 border-slate-900">
+                        <span className="text-sm font-bold text-slate-900">
+                          {cartCount}
+                        </span>
+                      </div>
+                    )}
                   </div>
-                )}
+                  <span className="text-3xl font-semibold text-white">
+                    Cart
+                  </span>
+                </div>
+                <span className="text-white/40 text-lg">Review & checkout</span>
               </div>
-              <span className="text-6xl font-black text-white drop-shadow-lg">
-                MY ITEMS
-              </span>
-            </div>
-          </button>
+            </button>
+
+            <button
+              onClick={() => onNavigate('myitems')}
+              className="bg-emerald-600/80 hover:bg-emerald-600 border border-emerald-400/30 rounded-2xl p-8 backdrop-blur-sm transform transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] group relative"
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-6">
+                  <div className="w-16 h-16 bg-white/10 rounded-xl flex items-center justify-center backdrop-blur-sm group-hover:bg-white/20 transition-colors relative">
+                    <Box className="w-8 h-8 text-white" strokeWidth={1.5} />
+                    {ownedCount > 0 && (
+                      <div className="absolute -top-2 -right-2 w-8 h-8 bg-amber-500 rounded-full flex items-center justify-center border-2 border-slate-900">
+                        <span className="text-sm font-bold text-slate-900">
+                          {ownedCount}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                  <span className="text-3xl font-semibold text-white">
+                    My Items
+                  </span>
+                </div>
+                <span className="text-white/40 text-lg">View purchased</span>
+              </div>
+            </button>
+          </div>
         </div>
       </div>
-    </div>
+    </PageWrapper>
   )
 }
