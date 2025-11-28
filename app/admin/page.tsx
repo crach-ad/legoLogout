@@ -321,6 +321,29 @@ export default function AdminDashboard() {
     return submissions.some(s => s.teamName === teamName && s.house === house)
   }
 
+  // Get submission for a team
+  const getTeamSubmission = (teamName: string, house: string) => {
+    return submissions.find(s => s.teamName === teamName && s.house === house)
+  }
+
+  // Get total score for a submission
+  const getSubmissionTotalScore = (submission: SubmissionWithScores) => {
+    const s = scores[submission.id]
+    if (!s) return submission.totalScore || 0
+    return calculateTotalScore(submission.id, submission.budget)
+  }
+
+  // Get total score for a house (sum of all submissions)
+  const getHouseTotalScore = (house: string) => {
+    const houseSubmissions = submissions.filter(s => s.house === house)
+    return houseSubmissions.reduce((total, sub) => total + getSubmissionTotalScore(sub), 0)
+  }
+
+  // Get submission count for a house
+  const getHouseSubmissionCount = (house: string) => {
+    return submissions.filter(s => s.house === house).length
+  }
+
   return (
     <PageWrapper>
       <div className="p-4 md:p-8">
@@ -427,23 +450,59 @@ export default function AdminDashboard() {
           ) : viewMode === 'teams' ? (
             /* TEAMS VIEW */
             <div className="space-y-6">
-              {/* Stats */}
+              {/* House Stats with Total Scores */}
               <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <Card className="p-4 bg-blue-900/30 backdrop-blur-md border border-blue-400/30 rounded-xl">
-                  <p className="text-sm text-white/60">Lynx Teams</p>
-                  <p className="text-3xl font-light text-white">{teams.filter(t => t.house === 'Lynx').length}</p>
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <p className="text-sm text-white/60">Lynx</p>
+                      <p className="text-sm text-white/40">{teams.filter(t => t.house === 'Lynx').length} teams · {getHouseSubmissionCount('Lynx')} scored</p>
+                    </div>
+                    <div className={`w-4 h-4 rounded-full bg-blue-900`} />
+                  </div>
+                  <div className="mt-3 pt-3 border-t border-blue-400/20">
+                    <p className="text-xs text-blue-300 uppercase tracking-wide">Total Points</p>
+                    <p className="text-3xl font-light text-white">{getHouseTotalScore('Lynx')}</p>
+                  </div>
                 </Card>
                 <Card className="p-4 bg-yellow-500/20 backdrop-blur-md border border-yellow-400/30 rounded-xl">
-                  <p className="text-sm text-white/60">Jaguar Teams</p>
-                  <p className="text-3xl font-light text-white">{teams.filter(t => t.house === 'Jaguar').length}</p>
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <p className="text-sm text-white/60">Jaguar</p>
+                      <p className="text-sm text-white/40">{teams.filter(t => t.house === 'Jaguar').length} teams · {getHouseSubmissionCount('Jaguar')} scored</p>
+                    </div>
+                    <div className={`w-4 h-4 rounded-full bg-yellow-500`} />
+                  </div>
+                  <div className="mt-3 pt-3 border-t border-yellow-400/20">
+                    <p className="text-xs text-yellow-300 uppercase tracking-wide">Total Points</p>
+                    <p className="text-3xl font-light text-white">{getHouseTotalScore('Jaguar')}</p>
+                  </div>
                 </Card>
                 <Card className="p-4 bg-red-600/20 backdrop-blur-md border border-red-400/30 rounded-xl">
-                  <p className="text-sm text-white/60">Cougar Teams</p>
-                  <p className="text-3xl font-light text-white">{teams.filter(t => t.house === 'Cougar').length}</p>
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <p className="text-sm text-white/60">Cougar</p>
+                      <p className="text-sm text-white/40">{teams.filter(t => t.house === 'Cougar').length} teams · {getHouseSubmissionCount('Cougar')} scored</p>
+                    </div>
+                    <div className={`w-4 h-4 rounded-full bg-red-600`} />
+                  </div>
+                  <div className="mt-3 pt-3 border-t border-red-400/20">
+                    <p className="text-xs text-red-300 uppercase tracking-wide">Total Points</p>
+                    <p className="text-3xl font-light text-white">{getHouseTotalScore('Cougar')}</p>
+                  </div>
                 </Card>
                 <Card className="p-4 bg-green-600/20 backdrop-blur-md border border-green-400/30 rounded-xl">
-                  <p className="text-sm text-white/60">Panther Teams</p>
-                  <p className="text-3xl font-light text-white">{teams.filter(t => t.house === 'Panther').length}</p>
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <p className="text-sm text-white/60">Panther</p>
+                      <p className="text-sm text-white/40">{teams.filter(t => t.house === 'Panther').length} teams · {getHouseSubmissionCount('Panther')} scored</p>
+                    </div>
+                    <div className={`w-4 h-4 rounded-full bg-green-600`} />
+                  </div>
+                  <div className="mt-3 pt-3 border-t border-green-400/20">
+                    <p className="text-xs text-green-300 uppercase tracking-wide">Total Points</p>
+                    <p className="text-3xl font-light text-white">{getHouseTotalScore('Panther')}</p>
+                  </div>
                 </Card>
               </div>
 
@@ -456,17 +515,33 @@ export default function AdminDashboard() {
               ) : (
                 Object.entries(teamsByHouse).map(([house, houseTeams]) => (
                   <div key={house} className="space-y-3">
-                    <h2 className="text-xl font-medium text-white flex items-center gap-2">
-                      <div className={`w-4 h-4 rounded-full ${
-                        house === 'Lynx' ? 'bg-blue-900' :
-                        house === 'Jaguar' ? 'bg-yellow-500' :
-                        house === 'Cougar' ? 'bg-red-600' : 'bg-green-600'
-                      }`} />
-                      {house} ({houseTeams.length} teams)
-                    </h2>
+                    <div className={`flex items-center justify-between p-3 rounded-xl ${
+                      house === 'Lynx' ? 'bg-blue-900/20 border border-blue-400/20' :
+                      house === 'Jaguar' ? 'bg-yellow-500/20 border border-yellow-400/20' :
+                      house === 'Cougar' ? 'bg-red-600/20 border border-red-400/20' : 'bg-green-600/20 border border-green-400/20'
+                    }`}>
+                      <h2 className="text-xl font-medium text-white flex items-center gap-2">
+                        <div className={`w-4 h-4 rounded-full ${
+                          house === 'Lynx' ? 'bg-blue-900' :
+                          house === 'Jaguar' ? 'bg-yellow-500' :
+                          house === 'Cougar' ? 'bg-red-600' : 'bg-green-600'
+                        }`} />
+                        {house} ({houseTeams.length} teams)
+                      </h2>
+                      <div className="text-right">
+                        <p className={`text-xs uppercase tracking-wide ${
+                          house === 'Lynx' ? 'text-blue-300' :
+                          house === 'Jaguar' ? 'text-yellow-300' :
+                          house === 'Cougar' ? 'text-red-300' : 'text-green-300'
+                        }`}>{getHouseSubmissionCount(house)} submissions</p>
+                        <p className="text-2xl font-light text-white">{getHouseTotalScore(house)} <span className="text-sm text-white/40">pts</span></p>
+                      </div>
+                    </div>
                     <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
                       {houseTeams.map(team => {
                         const alreadySubmitted = hasSubmission(team.teamName, team.house)
+                        const teamSubmission = alreadySubmitted ? getTeamSubmission(team.teamName, team.house) : null
+                        const totalScore = teamSubmission ? getSubmissionTotalScore(teamSubmission) : 0
                         return (
                           <Card
                             key={team.id}
@@ -505,6 +580,14 @@ export default function AdminDashboard() {
                                 <span className="text-emerald-400">{team.ownedItems?.reduce((sum, item) => sum + item.quantity, 0) || 0} items</span>
                               </div>
                             </div>
+                            {alreadySubmitted && (
+                              <div className="mt-3 py-2 px-3 bg-emerald-500/20 rounded-lg border border-emerald-500/30">
+                                <div className="flex justify-between items-center">
+                                  <span className="text-sm text-emerald-400">Total Score</span>
+                                  <span className="text-2xl font-light text-white">{totalScore}</span>
+                                </div>
+                              </div>
+                            )}
                             <div className="mt-3 pt-3 border-t border-white/10">
                               {alreadySubmitted ? (
                                 <p className="text-xs text-emerald-400 text-center">Click to view submission</p>
