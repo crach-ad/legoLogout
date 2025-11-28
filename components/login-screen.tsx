@@ -62,8 +62,10 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
   }
 
   const handlePinSubmit = () => {
-    const isValidUser = ADMIN_USERS.some(user => user.toLowerCase() === adminUsername.trim().toLowerCase())
-    if (isValidUser && pin === ADMIN_PIN) {
+    const matchedUser = ADMIN_USERS.find(user => user.toLowerCase() === adminUsername.trim().toLowerCase())
+    if (matchedUser && pin === ADMIN_PIN) {
+      // Store the admin username for the session
+      localStorage.setItem('adminUser', matchedUser)
       router.push('/admin')
     } else {
       setPinError(true)

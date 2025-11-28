@@ -24,6 +24,7 @@ interface SubmissionWithScores extends SubmissionDocument {
   coreValuesScore?: number
   totalScore?: number
   notes?: string
+  scoredBy?: string
 }
 
 type ViewMode = 'teams' | 'submissions'
@@ -36,6 +37,7 @@ export default function AdminDashboard() {
   const [selectedHouse, setSelectedHouse] = useState<string>('all')
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState<string | null>(null)
+  const [adminUser, setAdminUser] = useState<string>('')
   const [scores, setScores] = useState<Record<string, {
     roverBuildScore: number
     codingScore: number
@@ -98,6 +100,11 @@ export default function AdminDashboard() {
   }
 
   useEffect(() => {
+    // Load admin user from localStorage
+    const storedAdminUser = localStorage.getItem('adminUser')
+    if (storedAdminUser) {
+      setAdminUser(storedAdminUser)
+    }
     loadData()
   }, [])
 
@@ -161,7 +168,8 @@ export default function AdminDashboard() {
         const totalScore = calculateNewSubmissionTotal(selectedTeam.budget)
         await updateSubmissionScore(newSub.id, {
           ...newSubmissionScores,
-          totalScore
+          totalScore,
+          scoredBy: adminUser
         })
       }
 
@@ -172,7 +180,8 @@ export default function AdminDashboard() {
         ...selectedTeam,
         timestamp: new Date().toISOString(),
         ...newSubmissionScores,
-        totalScore
+        totalScore,
+        scoredBy: adminUser
       })
       localStorage.setItem('submissions', JSON.stringify(localSubmissions))
 
@@ -208,13 +217,14 @@ export default function AdminDashboard() {
 
       await updateSubmissionScore(submission.id, {
         ...submissionScores,
-        totalScore
+        totalScore,
+        scoredBy: adminUser
       })
 
       // Update local state
       setSubmissions(prev => prev.map(s =>
         s.id === submission.id
-          ? { ...s, ...submissionScores, totalScore }
+          ? { ...s, ...submissionScores, totalScore, scoredBy: adminUser }
           : s
       ))
 
@@ -222,7 +232,7 @@ export default function AdminDashboard() {
       const localSubmissions = JSON.parse(localStorage.getItem('submissions') || '[]')
       const updatedLocal = localSubmissions.map((s: any) =>
         s.teamName === submission.teamName && s.house === submission.house
-          ? { ...s, ...submissionScores, totalScore }
+          ? { ...s, ...submissionScores, totalScore, scoredBy: adminUser }
           : s
       )
       localStorage.setItem('submissions', JSON.stringify(updatedLocal))
@@ -359,7 +369,12 @@ export default function AdminDashboard() {
                 <ArrowLeft className="mr-2 h-5 w-5" strokeWidth={1.5} />
                 Exit
               </Button>
-              <h1 className="text-3xl font-light text-white">Admin Dashboard</h1>
+              <div>
+                <h1 className="text-3xl font-light text-white">Admin Dashboard</h1>
+                {adminUser && (
+                  <p className="text-sm text-purple-400">Logged in as: {adminUser}</p>
+                )}
+              </div>
             </div>
             <div className="flex gap-2">
               <Button
@@ -665,7 +680,7 @@ export default function AdminDashboard() {
                               )}
                               <div>
                                 <h3 className="text-xl font-medium text-white">{sub.teamName}</h3>
-                                <div className="flex items-center gap-2 mt-1">
+                                <div className="flex items-center gap-2 mt-1 flex-wrap">
                                   <span className={`px-2 py-0.5 rounded text-sm ${
                                     sub.house === 'Lynx' ? 'bg-blue-900/50 text-blue-300' :
                                     sub.house === 'Jaguar' ? 'bg-yellow-500/30 text-yellow-300' :
@@ -676,6 +691,11 @@ export default function AdminDashboard() {
                                   <span className="text-sm text-white/40">
                                     {sub.timestamp ? new Date(sub.timestamp).toLocaleString() : 'N/A'}
                                   </span>
+                                  {sub.scoredBy && (
+                                    <span className="text-sm text-purple-400">
+                                      • Scored by: {sub.scoredBy}
+                                    </span>
+                                  )}
                                 </div>
                               </div>
                             </div>

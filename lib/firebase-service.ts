@@ -212,6 +212,7 @@ export async function updateSubmissionScore(
     coreValuesScore?: number
     totalScore?: number
     notes?: string
+    scoredBy?: string
   }
 ): Promise<void> {
   if (!isFirebaseConfigured() || !db) {
