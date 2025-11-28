@@ -4,9 +4,10 @@ import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import { ArrowLeft, Download, Trash2, Save, Trophy, RefreshCw, Users, ClipboardList, X, Send } from 'lucide-react'
+import { ArrowLeft, Download, Trash2, Save, Trophy, RefreshCw, Users, ClipboardList, X, Send, ChevronDown } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { PageWrapper } from '@/components/page-wrapper'
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import {
   getAllSubmissions,
   getAllTeams,
@@ -45,6 +46,14 @@ export default function AdminDashboard() {
     coreValuesScore: number
     notes: string
   }>>({})
+
+  // Track which house sections are expanded (default all expanded)
+  const [expandedHouses, setExpandedHouses] = useState<Record<string, boolean>>({
+    Lynx: true,
+    Jaguar: true,
+    Cougar: true,
+    Panther: true
+  })
 
   // Selected team for creating submission
   const [selectedTeam, setSelectedTeam] = useState<TeamDocument | null>(null)
@@ -529,13 +538,19 @@ export default function AdminDashboard() {
                 </Card>
               ) : (
                 Object.entries(teamsByHouse).map(([house, houseTeams]) => (
-                  <div key={house} className="space-y-3">
-                    <div className={`flex items-center justify-between p-3 rounded-xl ${
-                      house === 'Lynx' ? 'bg-blue-900/20 border border-blue-400/20' :
-                      house === 'Jaguar' ? 'bg-yellow-500/20 border border-yellow-400/20' :
-                      house === 'Cougar' ? 'bg-red-600/20 border border-red-400/20' : 'bg-green-600/20 border border-green-400/20'
+                  <Collapsible
+                    key={house}
+                    open={expandedHouses[house]}
+                    onOpenChange={(open) => setExpandedHouses(prev => ({ ...prev, [house]: open }))}
+                    className="space-y-3"
+                  >
+                    <CollapsibleTrigger className={`w-full flex items-center justify-between p-3 rounded-xl cursor-pointer transition-colors ${
+                      house === 'Lynx' ? 'bg-blue-900/20 border border-blue-400/20 hover:bg-blue-900/30' :
+                      house === 'Jaguar' ? 'bg-yellow-500/20 border border-yellow-400/20 hover:bg-yellow-500/30' :
+                      house === 'Cougar' ? 'bg-red-600/20 border border-red-400/20 hover:bg-red-600/30' : 'bg-green-600/20 border border-green-400/20 hover:bg-green-600/30'
                     }`}>
                       <h2 className="text-xl font-medium text-white flex items-center gap-2">
+                        <ChevronDown className={`w-5 h-5 transition-transform duration-200 ${expandedHouses[house] ? '' : '-rotate-90'}`} />
                         <div className={`w-4 h-4 rounded-full ${
                           house === 'Lynx' ? 'bg-blue-900' :
                           house === 'Jaguar' ? 'bg-yellow-500' :
@@ -551,7 +566,8 @@ export default function AdminDashboard() {
                         }`}>{getHouseSubmissionCount(house)} submissions</p>
                         <p className="text-2xl font-light text-white">{getHouseTotalScore(house)} <span className="text-sm text-white/40">pts</span></p>
                       </div>
-                    </div>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent>
                     <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
                       {houseTeams.map(team => {
                         const alreadySubmitted = hasSubmission(team.teamName, team.house)
@@ -614,7 +630,8 @@ export default function AdminDashboard() {
                         )
                       })}
                     </div>
-                  </div>
+                    </CollapsibleContent>
+                  </Collapsible>
                 ))
               )}
             </div>
