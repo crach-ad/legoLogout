@@ -18,6 +18,7 @@ const HOUSES = [
 
 const TOTAL_BUDGET = 120
 const ADMIN_PIN = '1122'
+const ADMIN_USERS = ['Carlo', 'Mark', 'Crachad']
 
 interface LoginScreenProps {
   onLogin: (profile: TeamProfile) => void | Promise<void>
@@ -32,6 +33,7 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
 
   // PIN modal state
   const [showPinModal, setShowPinModal] = useState(false)
+  const [adminUsername, setAdminUsername] = useState('')
   const [pin, setPin] = useState('')
   const [pinError, setPinError] = useState(false)
 
@@ -60,7 +62,8 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
   }
 
   const handlePinSubmit = () => {
-    if (pin === ADMIN_PIN) {
+    const isValidUser = ADMIN_USERS.some(user => user.toLowerCase() === adminUsername.trim().toLowerCase())
+    if (isValidUser && pin === ADMIN_PIN) {
       router.push('/admin')
     } else {
       setPinError(true)
@@ -218,6 +221,7 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
                 size="sm"
                 onClick={() => {
                   setShowPinModal(false)
+                  setAdminUsername('')
                   setPin('')
                   setPinError(false)
                 }}
@@ -229,7 +233,21 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
 
             <div className="space-y-4">
               <div>
-                <label className="text-sm text-white/60 block mb-2">Enter PIN</label>
+                <label className="text-sm text-white/60 block mb-2">Username</label>
+                <Input
+                  type="text"
+                  value={adminUsername}
+                  onChange={(e) => setAdminUsername(e.target.value)}
+                  placeholder="Enter username"
+                  className={`h-12 text-center rounded-xl bg-white/10 border-white/20 text-white placeholder:text-white/30 ${
+                    pinError ? 'border-red-500' : ''
+                  }`}
+                  autoFocus
+                />
+              </div>
+
+              <div>
+                <label className="text-sm text-white/60 block mb-2">PIN</label>
                 <Input
                   type="password"
                   value={pin}
@@ -244,16 +262,16 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
                       handlePinSubmit()
                     }
                   }}
-                  autoFocus
                 />
                 {pinError && (
-                  <p className="text-red-400 text-sm mt-2 text-center">Incorrect PIN</p>
+                  <p className="text-red-400 text-sm mt-2 text-center">Invalid username or PIN</p>
                 )}
               </div>
 
               <Button
                 onClick={handlePinSubmit}
-                className="w-full h-12 rounded-xl bg-white text-slate-900 hover:bg-white/90"
+                disabled={!adminUsername.trim() || !pin}
+                className="w-full h-12 rounded-xl bg-white text-slate-900 hover:bg-white/90 disabled:opacity-50"
               >
                 Access Dashboard
               </Button>
