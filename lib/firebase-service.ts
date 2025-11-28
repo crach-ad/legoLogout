@@ -199,3 +199,52 @@ export function generateTeamId(house: string, teamName: string): string {
   const sanitized = teamName.toLowerCase().replace(/[^a-z0-9]/g, '-')
   return `${house.toLowerCase()}-${sanitized}-${Date.now()}`
 }
+
+/**
+ * Update a submission's score
+ */
+export async function updateSubmissionScore(
+  submissionId: string,
+  scores: {
+    roverBuildScore?: number
+    codingScore?: number
+    itemsCollected?: number
+    coreValuesScore?: number
+    totalScore?: number
+    notes?: string
+  }
+): Promise<void> {
+  if (!isFirebaseConfigured() || !db) {
+    console.warn('Firebase not configured, skipping score update')
+    return
+  }
+
+  try {
+    const submissionRef = doc(db, SUBMISSIONS_COLLECTION, submissionId)
+    await updateDoc(submissionRef, {
+      ...scores,
+      scoredAt: serverTimestamp()
+    })
+  } catch (error) {
+    console.error('Error updating submission score:', error)
+    throw new Error('Failed to update submission score')
+  }
+}
+
+/**
+ * Delete a submission
+ */
+export async function deleteSubmission(submissionId: string): Promise<void> {
+  if (!isFirebaseConfigured() || !db) {
+    console.warn('Firebase not configured, skipping delete')
+    return
+  }
+
+  try {
+    const submissionRef = doc(db, SUBMISSIONS_COLLECTION, submissionId)
+    await deleteDoc(submissionRef)
+  } catch (error) {
+    console.error('Error deleting submission:', error)
+    throw new Error('Failed to delete submission')
+  }
+}

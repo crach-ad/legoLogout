@@ -4,8 +4,9 @@ import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import { Rocket } from 'lucide-react'
+import { Rocket, Settings, X } from 'lucide-react'
 import Image from 'next/image'
+import { useRouter } from 'next/navigation'
 import type { TeamProfile } from '@/lib/types'
 
 const HOUSES = [
@@ -16,16 +17,23 @@ const HOUSES = [
 ]
 
 const TOTAL_BUDGET = 120
+const ADMIN_PIN = '1122'
 
 interface LoginScreenProps {
   onLogin: (profile: TeamProfile) => void | Promise<void>
 }
 
 export function LoginScreen({ onLogin }: LoginScreenProps) {
+  const router = useRouter()
   const [house, setHouse] = useState('')
   const [teamName, setTeamName] = useState('')
   const [step, setStep] = useState(1)
   const [isLoading, setIsLoading] = useState(false)
+
+  // PIN modal state
+  const [showPinModal, setShowPinModal] = useState(false)
+  const [pin, setPin] = useState('')
+  const [pinError, setPinError] = useState(false)
 
   const handleStart = async () => {
     if (!house || !teamName.trim() || isLoading) return
@@ -51,6 +59,16 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
     }
   }
 
+  const handlePinSubmit = () => {
+    if (pin === ADMIN_PIN) {
+      router.push('/admin')
+    } else {
+      setPinError(true)
+      setPin('')
+      setTimeout(() => setPinError(false), 2000)
+    }
+  }
+
   return (
     <div className="min-h-screen relative flex items-center justify-center p-4 bg-slate-900">
       {/* Background Image with 10% opacity */}
@@ -63,6 +81,14 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
           priority
         />
       </div>
+
+      {/* Scorer Button - Top Right */}
+      <button
+        onClick={() => setShowPinModal(true)}
+        className="absolute top-4 right-4 z-20 w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center transition-all"
+      >
+        <Settings className="w-5 h-5 text-white/40 hover:text-white/60" strokeWidth={1.5} />
+      </button>
 
       {/* Content */}
       <div className="relative z-10 w-full max-w-4xl space-y-8">
@@ -180,6 +206,61 @@ export function LoginScreen({ onLogin }: LoginScreenProps) {
           </Card>
         )}
       </div>
+
+      {/* PIN Modal */}
+      {showPinModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
+          <Card className="w-full max-w-sm p-6 bg-slate-900 border border-white/20 rounded-2xl">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-light text-white">Scorer Access</h2>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setShowPinModal(false)
+                  setPin('')
+                  setPinError(false)
+                }}
+                className="text-white/60 hover:text-white hover:bg-white/10"
+              >
+                <X className="h-5 w-5" />
+              </Button>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm text-white/60 block mb-2">Enter PIN</label>
+                <Input
+                  type="password"
+                  value={pin}
+                  onChange={(e) => setPin(e.target.value)}
+                  placeholder="****"
+                  maxLength={4}
+                  className={`h-14 text-2xl text-center tracking-widest rounded-xl bg-white/10 border-white/20 text-white placeholder:text-white/30 ${
+                    pinError ? 'border-red-500 animate-shake' : ''
+                  }`}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      handlePinSubmit()
+                    }
+                  }}
+                  autoFocus
+                />
+                {pinError && (
+                  <p className="text-red-400 text-sm mt-2 text-center">Incorrect PIN</p>
+                )}
+              </div>
+
+              <Button
+                onClick={handlePinSubmit}
+                className="w-full h-12 rounded-xl bg-white text-slate-900 hover:bg-white/90"
+              >
+                Access Dashboard
+              </Button>
+            </div>
+          </Card>
+        </div>
+      )}
     </div>
   )
 }
